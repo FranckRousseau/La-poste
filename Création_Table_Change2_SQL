@@ -1,0 +1,13 @@
+SELECT  poste.poste_loc, service.serv_monnaie,
+count(service.serv_monnaie) AS "Bureau_change "
+INTO service2
+FROM service
+INNER JOIN poste ON poste.id_poste = service.id_serv
+WHERE service.serv_monnaie = 'Oui' AND poste.poste_loc = 'PARIS' 
+OR service.serv_monnaie = 'Oui' AND poste.poste_loc = 'MARSEILLE'
+OR service.serv_monnaie = 'Oui' AND poste.poste_loc = 'NICE'
+OR service.serv_monnaie = 'Oui' AND poste.poste_loc = 'LYON'
+OR service.serv_monnaie = 'Oui' AND poste.poste_loc = 'TOULOUSE'
+GROUP BY poste.poste_loc,  service.serv_monnaie
+HAVING count(*) >= 1
+ORDER BY count(*) DESC;
