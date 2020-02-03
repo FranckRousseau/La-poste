@@ -1,0 +1,126 @@
+###IMPORTATION DES LIBRAIRIES
+install.packages("ggplot")
+library(ggplot)
+library(lattice)
+library(rmd)
+library(rmarkdown)
+library(knitr) 
+library(md)
+library(RPostgres)
+library(RPostgreSQL)
+library(dplyr)
+library(tidytext)
+library(stringr)
+library(tidyr)
+library(devtools)
+library(rmd)
+library(knitr) 
+library(md)
+library(DBI)
+library(dbplyr)
+library(ggplot2)
+library(tidyverse)
+library(tidytext)
+library(stringr)
+library(tidyr)
+library(usethis)
+
+###CONNECTION À LA BASE DE DONNÉE POSTGRESQL
+
+con <- dbConnect(RPostgres::Postgres(),dbname = 'BDD_Franck', 
+                 host = '127.0.0.1', 
+                 port = 5433,        
+                 user = 'rousseau',
+                 password = '61d83bfb9517b54799cf8316a3c92111dbca4dfdf9e89e916b09417879f12376')
+print(con)
+dbListTables(con)
+
+# Lecture des tables
+
+poste <- dbReadTable(con, "poste")
+handicap <- dbReadTable(con, "handicap")
+service <- dbReadTable(con, "service")
+automate <- dbReadTable(con, "automate")
+comptage_DAB <- dbReadTable(con, "dab")
+comptage_HAND <- dbReadTable(con,"handicap4")
+comptage_AGENCE <- dbReadTable(con,"agence")
+
+## barplot: nombre de distributeurs par villes et externe ou interne #####################
+
+x = c(14,21,3,33,12) 
+y = c(5,5,5,15,2) 
+type = c("Lyon","Marseille","Nice","Paris","Toulouse") 
+moyennes = c(x,y) 
+moyennes = matrix(moyennes,nc=5, nr=2, byrow=T) # nc : nombre de tests - nr : nombre de barres accolées (ici par paire) 
+colnames(moyennes) = type 
+barplot(moyennes,beside=T,col=c("red","orange"),xlab="Villes",ylab="Nombre de distributeurs",main="Comptage des distributeurs par villes et par types") ; box() 
+legend(x="topright", legend=c("Externe","Interne"), cex=0.5,fill=c("red","orange")) 
+
+##Moyenne des accés handicapés par types et  par villes#####################################
+
+barre1 = c(20,11,5) #Paris
+barre2 = c(7,3,5) # Marseilles
+barre3 = c(3,3,2) # Nice
+barre4 = c(4.5,2.3,4.5) # Toulouse
+barre5 = c(5,3.3,3) #Lyon
+couleurs_1 = c("#B45F04","#8FD175","#A10684")
+couleurs_2 = c("#B45F04","#8FD175","#A10684")
+couleurs_3 = c("#B45F04","#8FD175","#A10684")
+couleurs_4 = c("#B45F04","#8FD175","#A10684")
+couleurs_5 = c("#B45F04","#8FD175","#A10684")
+
+data = cbind(barre1, barre2, barre3, barre4 ,barre5)
+couleurs_compil = c(couleurs_5,couleurs_4,couleurs_3,couleurs_2,couleurs_1)
+
+plot.new() # ouvre une fenêtre graphique
+par(mar = c(3,5,3,2)) # change les marges pour permettre l'affichages des titres des barres 
+
+barplot(height = data,
+        space=3.5,horiz=T,col=couleurs_compil,xlim=c(0,40),ylim=c(0,70),main=("Moyenne des accès handicapés par villes et par types"),
+        
+        names.arg = c("Paris","Marseille","Nice","Toulouse","Lyon"),
+
+        legend.text = c("Accès handicapé moteur","Accès personne malvoyante","Autres"),
+
+        args.legend = list(x = "topright"),bty="n", las=1)
+
+#########Nombre de bureau de poste par villes et par types##########
+
+Villes  = c("Lyon","Marseille","Nice","Paris","Toulouse")
+nombre_bureau_poste = c(35,55,26,157,33)
+nombre_relais_poste = c(24,23,18,54,19)
+nombre_agence_inter = c(2,1,0,3,1)
+nombre_agence_comm = c(0,1,0,0,1)
+
+data<-cbind(nombre_bureau_poste,nombre_relais_poste,nombre_agence_inter,nombre_agence_comm)
+
+barplot(t(data),beside=F,col=c("#F5BCA9","grey","black","red"),ylab="Nombre de bureau",xlab="Villes",main=("Nombre de bureau de poste par villes et par types"),names=Villes,las=1,horiz=F,
+        ylim=c(0,220),xlim=c(0,6),space=0.2)
+
+box()
+legend(x="topleft", legend=c("Bureau de poste","Relais poste commerçant","Agence poste intercommunale","Agence poste communale"), cex=0.6,fill=c("#F5BCA9","grey","black","red"),bty="n")       
+
+###Pourcentagesdes bureaux de change par villes#############
+
+  valeurs <- c(9,5,3,1,1)
+  pie(valeurs,col=c("red","orange","pink","yellow","purple"),labels=c("Paris","Toulouse","Lyon","Marseille","Nice"),main="Pourcentages des bureaux de change par villes",cex=1, radius = 2 )     
+  total = sum(valeurs)
+  pourcentages = valeurs/total*100 ; cat("Les valeurs en % sont de :",pourcentages,"\n")
+  # Fonction à coller dans R - cette fonction text_pie permet d'ajouter des étiquettes au centre des quartiers
+  text_pie = function(vector,labels=c(),cex=1) {
+          vector = vector/sum(vector)*2*pi
+          temp = c()
+          j = 0
+          l = 0
+          for (i in 1:length(vector)) {
+                  k = vector[i]/2        
+                  j =  j+l+k
+                  l = k
+                  text(cos(j)/2,sin(j)/2,labels[i],cex=cex)
+          }
+          vector = temp
+  }
+  text_pie(pourcentages,c("47%","26,5%","15,5%","5,5%","5,5%"),cex=0.5) # Ces valeurs en % sont à remplac er manuellement
+  legend(x="bottomright", legend=c("Paris","Toulouse","Lyon","Marseille","Nice"), cex=0.5,fill=c("red","orange","pink","yellow","purple"))
+
+#####################################################
