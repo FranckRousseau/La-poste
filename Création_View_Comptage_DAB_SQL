@@ -1,0 +1,24 @@
+CREATE VIEW comptage_dab_view AS
+SELECT
+   poste.poste_loc, automate.auto_dab,
+   automate.auto_type,
+      COUNT (automate.auto_dab) AS "Nombre_distributeurs "
+FROM
+   automate
+INNER JOIN poste ON poste.id_poste = automate.id_auto
+WHERE automate.auto_dab = 'Externe' AND automate.auto_dab = 'Interne'
+AND automate.auto_type = 'DAB'
+AND poste.poste_loc = 'PARIS'
+OR poste.poste_loc ='NICE'
+OR poste.poste_loc ='MARSEILLE'
+OR poste.poste_loc ='TOULOUSE'
+OR poste.poste_loc ='LYON'
+GROUP BY
+   poste.poste_loc, automate.auto_dab,
+   automate.auto_type
+HAVING
+   COUNT (automate.auto_dab) >=1
+ORDER BY
+   poste.poste_loc;
+   
+SELECT * FROM comptage_dab_view;
