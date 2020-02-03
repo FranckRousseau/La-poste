@@ -1,0 +1,14 @@
+select poste.poste_loc, poste.poste_site,
+   		 COUNT (poste.poste_loc) AS "Nombre_agences" 
+INTO agence
+FROM poste
+WHERE poste.poste_site = 'Bureau de Poste' AND poste.poste_site = 'Relais poste commerçant' AND poste.poste_site = 'Agence postale intercommunale' AND poste.poste_site = 'Agence postale communale'
+OR  poste.poste_loc = 'PARIS'
+OR poste.poste_loc ='NICE'
+OR poste.poste_loc ='MARSEILLE'
+OR poste.poste_loc ='TOULOUSE'
+OR poste.poste_loc ='LYON'
+GROUP BY
+   poste.poste_loc, poste.poste_site
+HAVING COUNT (*) >=1
+ORDER BY poste.poste_loc DESC;
